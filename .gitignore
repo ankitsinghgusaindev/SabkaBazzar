@@ -1,0 +1,19 @@
+# secrets: never commit these
+.env
+.env.*
+!.env.example
+!frontend/.env.development
+!frontend/.env.uat
+!frontend/.env.production
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# node
+node_modules/
+frontend/dist/
+
+# local db volume
+pgdata/
