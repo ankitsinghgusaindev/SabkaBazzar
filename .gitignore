@@ -1,19 +1,22 @@
-# secrets: never commit these
+# Environment files and secrets
 .env
 .env.*
 !.env.example
-!frontend/.env.development
-!frontend/.env.uat
-!frontend/.env.production
 
-# python
+# Ignore actual frontend environment files
+/frontend/.env.development
+/frontend/.env.uat
+/frontend/.env.production
+!/frontend/.env.example
+
+# Python
 .venv/
 __pycache__/
 *.pyc
 
-# node
+# Node
 node_modules/
 frontend/dist/
 
-# local db volume
+# Local database volume
 pgdata/
