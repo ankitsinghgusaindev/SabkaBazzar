@@ -15,6 +15,7 @@ from .config import settings
 from .auth import create_token, current_user, hash_password, require_role, verify_password
 from .db import engine, get_db
 from .geo import bounding_box, haversine_km
+from .onboarding import router as onboarding_router
 from .models import (
     Base, CustomerShopLink, InventoryLog, Order, OrderItem, OrderReview, OrderStatus,
     Product, ProductReview, Role, Shop, User,
@@ -43,6 +44,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(onboarding_router)
 
 
 # ---------- Schemas ----------
@@ -201,6 +205,7 @@ def shop_public(s: Shop) -> dict:
         "lng": s.lng,
         "delivery_radius_km": s.delivery_radius_km,
         "is_open": s.is_open,
+        "verification_status": s.verification_status,
         "members_only": s.members_only,
         "shop_rating": round(s.shop_rating_avg, 2),
         "shop_rating_count": s.shop_rating_count,
@@ -289,6 +294,7 @@ def nearby_shops(
         db.query(Shop)
         .filter(
             Shop.is_open.is_(True),
+            Shop.verification_status == "verified",
             Shop.lat.between(min_lat, max_lat),
             Shop.lng.between(min_lng, max_lng),
         )
@@ -319,7 +325,7 @@ def shop_detail(
     db: Session = Depends(get_db),
 ):
     shop = db.get(Shop, shop_id)
-    if shop is None:
+    if shop is None or shop.verification_status != "verified":
         raise HTTPException(404, "Shop not found")
     if shop.members_only and membership(db, user.id, shop.id) is None:
         raise HTTPException(403, "This shop only serves its members")
@@ -345,7 +351,7 @@ def join_shop(
     db: Session = Depends(get_db),
 ):
     shop = db.query(Shop).filter_by(invite_code=body.invite_code.strip().upper()).first()
-    if shop is None:
+    if shop is None or shop.verification_status != "verified":
         raise HTTPException(404, "Invalid invite code")
     if membership(db, user.id, shop.id) is None:
         db.add(CustomerShopLink(customer_id=user.id, shop_id=shop.id))
@@ -371,8 +377,8 @@ def place_order(
 
     # 2. Shop and access rules
     shop = db.get(Shop, body.shop_id)
-    if shop is None or not shop.is_open:
-        raise HTTPException(409, "Shop is closed or does not exist")
+    if shop is None or not shop.is_open or shop.verification_status != "verified":
+        raise HTTPException(409, "Shop is closed, unverified or does not exist")
 
     link = membership(db, user.id, shop.id)
     if shop.members_only and link is None:

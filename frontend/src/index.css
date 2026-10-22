@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-slate-50 font-sans text-slate-800 antialiased; }
+  ::selection { @apply bg-brand-200; }
+}
+
+@layer components {
+  .card { @apply rounded-2xl border border-slate-200/70 bg-white shadow-sm; }
+  .gradient-brand { @apply bg-gradient-to-br from-brand-500 to-rose-500; }
+  .gradient-text { @apply bg-gradient-to-r from-brand-600 to-rose-500 bg-clip-text text-transparent; }
+  .skeleton { @apply rounded-xl bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%] animate-shimmer; }
+}

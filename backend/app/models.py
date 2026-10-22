@@ -64,6 +64,22 @@ class Shop(Base):
     delivery_rating_avg: Mapped[float] = mapped_column(Float, default=0.0)
     delivery_rating_count: Mapped[int] = mapped_column(Integer, default=0)
 
+    # Enrollment (KYC) and admin verification
+    verification_status: Mapped[str] = mapped_column(String(20), default="pending", index=True)  # pending | verified | rejected
+    legal_name: Mapped[str] = mapped_column(String(160), default="")
+    owner_full_name: Mapped[str] = mapped_column(String(120), default="")
+    pan_number: Mapped[str] = mapped_column(String(10), default="")
+    gst_number: Mapped[Optional[str]] = mapped_column(String(15), nullable=True)
+    shop_license_number: Mapped[str] = mapped_column(String(60), default="")
+    fssai_number: Mapped[Optional[str]] = mapped_column(String(14), nullable=True)
+    bank_account_number: Mapped[str] = mapped_column(String(18), default="")  # encrypt at rest before production
+    bank_ifsc: Mapped[str] = mapped_column(String(11), default="")
+    documents: Mapped[Optional[str]] = mapped_column(Text, nullable=True)     # JSON list of "KEY:filename"
+    rejection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    reviewed_by_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
     owner: Mapped[User] = relationship(back_populates="shop")
     products: Mapped[list["Product"]] = relationship(cascade="all, delete-orphan")
 
